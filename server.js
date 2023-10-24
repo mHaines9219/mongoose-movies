@@ -5,12 +5,13 @@ var cookieParser = require("cookie-parser");
 var logger = require("morgan");
 var session = require("express-session");
 var passport = require("passport");
+var methodOverride = require("method-override");
 
 require("dotenv").config();
 // connect to the database with AFTER the config vars are processed
 require("./config/database");
 //config passport middleware
-require("/.config/passport");
+require("./config/passport");
 
 const indexRouter = require("./routes/index");
 const moviesRouter = require("./routes/movies");
@@ -27,6 +28,7 @@ app.use(logger("dev"));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
+app.use(methodOverride("_method"));
 app.use(express.static(path.join(__dirname, "public")));
 app.use(
   session({
@@ -37,6 +39,10 @@ app.use(
 );
 app.use(passport.initialize());
 app.use(passport.session());
+app.use(function (req, res, next) {
+  res.locals.user = req.user;
+  next();
+});
 
 app.use("/", indexRouter);
 app.use("/movies", moviesRouter);
